@@ -315,7 +315,7 @@ const PROFILE = {
   github: "https://github.com/vedant0321",
   linkedin: "https://www.linkedin.com/in/vedant-birewar-85438724b/",
   phone: "+91 9420277590",
-  resume: "https://drive.google.com/file/d/18Tf12f7HW75a-o4pg3JwE-xbe3gdOJbr/view?usp=drive_link",
+  resume: "https://drive.google.com/file/d/1huTrfPn4g-FmARAGTHT9CfcVoFi6Q7Sv/view?usp=sharing",
   version: "1.6.0",
 };
 
@@ -338,50 +338,101 @@ const SKILLS = [
 ];
 
 const PROJECTS = [
-  { n: "Academic-Fit", t: "AI-driven resume evaluation platform",
-    d: "Fine-tuned LLM platform that evaluates student resumes against job descriptions, pinpoints skill gaps, and generates personalised improvement recommendations. Institution-level analytics dashboards with CSV export.",
+  {
+    n: "Academic-Fit",
+    t: "AI-Driven Resume Evaluation Platform",
+    d: "Built a fine-tuned LLM platform that evaluates student resumes against job descriptions, identifies skill gaps, and generates personalized improvement recommendations. Designed institution-level analytics dashboards with CSV export to track cohort employability at scale.",
     s: "Python · Gemini LLM · Machine Learning · NLP",
-    m: "Jan 2025 · cohort-scale employability tracking for advisors",
-    l: "https://github.com/vedant0321" },
-  { n: "EyeGuardian", t: "ocular disease classification model",
-    d: "ResNet18-based deep learning model using transfer learning for multi-class retinal disease classification from fundus images.",
+    m: "Jan 2025 · AI-powered resume evaluation and analytics",
+    l: "https://github.com/vedant0321/ATS_Checker"
+  },
+
+  {
+    n: "EyeGuardian",
+    t: "Ocular Disease Classification Model",
+    d: "Developed a ResNet18-based deep learning model using transfer learning for multi-class retinal disease classification from fundus images, achieving strong diagnostic accuracy.",
     s: "Python · FastAI · ResNet18 · Transfer Learning · Computer Vision",
-    m: "Oct 2023 · strong diagnostic accuracy on multi-class retinal disease",
-    l: "https://github.com/vedant0321" },
-  { n: "Crop Prediction Platform", t: "next-gen agricultural ML pipeline",
-    d: "End-to-end ML pipeline combining crop recommendation and yield prediction models, delivering actionable resource optimisation insights via an interactive dashboard.",
+    m: "Oct 2023 · Retinal disease classification using deep learning",
+    l: "https://github.com/vedant0321/Ocular-disease-"
+  },
+
+  {
+    n: "Next-Gen Crop Prediction Platform",
+    t: "Crop Recommendation & Yield Prediction System",
+    d: "Built an end-to-end machine learning pipeline combining crop recommendation and yield prediction models, delivering actionable agricultural insights through an interactive Streamlit dashboard.",
     s: "Python · Machine Learning · Streamlit",
-    m: "Apr 2022 · live recommendation + yield dashboard",
-    l: "https://github.com/vedant0321" },
-  { n: "AAC System", t: "assistive tech for the visually impaired",
-    d: "ML-powered object detection and audio assistance device for visually impaired users, enabling real-time inference at the edge.",
+    m: "Apr 2022 · End-to-end agricultural intelligence platform",
+    l: "https://github.com/vedant0321/Stremlit-Crop-Crop-Prediction"
+  },
+
+  {
+    n: "AAC System",
+    t: "Augmentative and Alternative Communication System",
+    d: "Engineered an ML-powered object detection and audio assistance device for visually impaired users using Raspberry Pi and Arduino, enabling real-time edge inference and accessibility support.",
     s: "Python · Raspberry Pi · Arduino · IoT · Object Detection",
-    m: "Aug 2021 · real-time edge inference on embedded hardware",
-    l: "https://github.com/vedant0321" },
+    m: "Aug 2021 · Real-time assistive technology for accessibility",
+    l: "https://github.com/vedant0321/SIH"
+  }
 ];
 
 const EXPERIENCE = [
-  { when: "Jul 2025 — now", role: "Junior Python Developer — AI/ML", org: "Com1 Communication Technologies Pvt. Ltd.", where: "Nagpur, IN",
-    pts: [
-      "AI Bid Assistant: architected an end-to-end AI document understanding system parsing UK tender packs, frameworks and bid documents — cutting manual review time for enterprise clients",
-      "Engineered an LLM-driven questionnaire generator that auto-creates structured eligibility/compliance question sets from tender docs",
-      "Built an automated knowledge extraction pipeline surfacing mandatory clauses, deadlines, scope and risk items",
-      "Implemented an agentic reasoning workflow for cross-document tender comparison",
-      "Locarla AI: designed and deployed an agentic RAG system over 4.8M+ EPC property records for natural-language querying of energy ratings and housing analytics",
-      "Built a ChatGPT-style multi-turn memory engine with session context preservation",
-      "Developed an automated NL-to-SQL module translating questions into optimised SQL over a large-scale property DB",
-      "Achieved measurable inference gains via embedding pipelining, response caching and model-level optimisation",
-    ]},
-  { when: "Jan 2025 — Jul 2025", role: "AI/ML Intern", org: "ImmverseAI", where: "Nagpur, IN",
-    pts: [
-      "Researched and benchmarked SOTA LLMs, TTS models, lip-sync engines and video synthesis pipelines for a real-time AI avatar system",
-      "Built a CUDA-accelerated face detection/recognition service using DLIB + FastAPI for sub-second identity verification",
-      "Converted and optimised VAE model weights to ONNX, achieving 30-40% reduction in inference latency and GPU memory",
-      "Integrated RIFE frame interpolation for smoother lip-sync and motion transitions",
-      "Developed a streaming TTS response layer for real-time, low-latency conversational interactions",
-      "Contributed to a full-stack audio-to-pose synthesis and real-time rendering pipeline across ML, backend and product teams",
-    ]},
+{
+  when: "Jul 2025 - Present",
+  role: "Junior Python Developer - AI/ML",
+  org: "Com1 Communication Technologies Pvt. Ltd.",
+  where: "Nagpur, IN",
+
+  projects: [
+    {
+      title: "AI Bid Assistant - UK Tender Pack Analyser",
+      pts: [
+        "Architected an end-to-end AI document understanding system that parses complex UK tender packs, frameworks, and bid documents,significantly reducing manual review time for enterprise clients",
+        "Engineered an LLM-driven questionnaire generator that auto-creates structured eligibility and compliance question sets from tender documents, enabling faster bid-readiness assessment.",
+        "Designed an automated knowledge extraction pipeline that surfaces mandatory clauses, compliance deadlines, scope definitions, and risk items — eliminating hours of manual document triage.",
+        "Implemented an agentic reasoning workflow for cross-document comparison, allowing users to evaluate multiple tender packs side by-side before committing to a bid.",
+        "Built a production-ready FastAPI backend with LLM orchestration, ensuring reliable, low-latency responses for concurrent enterprise users."
+      ]
+    },
+
+    {
+      title: "Locarla AI - EPC Intelligence Chatbot (4.8M+ Records)",
+      pts: [
+        "Designed and deployed an agentic RAG system over 4.8M+ EPC property records, enabling natural-language querying of energy ratings, decarbonisation pathways, and housing stock analytics.",
+        "Built aChatGPT-style multi-turn memory engine with session context preservation, dramatically improving the coherence and accuracy of follow-up queries.",
+        "Developed an automated NL-to-SQL generation module, translating user questions into optimised SQL queries to extract precise insights from a large-scale property database.",
+        "Extended the system to produce data summaries, statistical breakdowns, and actionable intelligence for housing associations, local councils, and retrofit contractors.",
+        "Achieved measurable inference gains through embedding pipelining, response caching, and model-level optimisation across the retrieval and generation stack."
+      ]
+    },
+
+    {
+      title: "Tender Intelligence & Client Opportunity Automation",
+      pts: [
+        " Developed an AI-powered procurement intelligence platform processing UK government tender and contract notices for automated data enrichment.",
+        "Fine-tuned and served an in-house Gemma LLM using vLLM to classify trades, sectors, locations, and project summaries from unstructured procurement documents.",
+        "Automated trade classification across thousands of tender records, improving data quality and reducing manual processing effort.",
+        "Built a website intelligence pipeline that extracts business domains and trade specializations from client websites using LLM-based analysis.",
+        "Developed a contract-matching engine that generates personalized procurement bulletins by aligning client profiles with relevant contract opportunities"
+      ]
+    }
+  ]
+},
+{
+when: "Jan 2025 — Jul 2025",
+role: "AI/ML Intern",
+org: "ImmverseAI",
+where: "Nagpur, IN",
+pts: [
+"Researched and benchmarked state-of-the-art LLMs, TTS models, lip-sync engines, and video synthesis pipelines to identify optimal components for a real-time AI avatar system.",
+"Built a CUDA-accelerated face detection and recognition service using DLIB + FastAPI, enabling sub-second identity verification in the avatar pipeline.",
+"Converted and optimised VAE model weights to ONNX format, achieving 30–40% reduction in inference latency and GPU memory consumption.",
+"Integrated RIFE frame interpolation to enhance avatar video fluidity, delivering smoother lip-sync and motion transitions for end users.",
+"Developed a streaming TTS response layer enabling real-time, low-latency conversational interactions with the AI avatar",
+"Contributed to a full-stack audio-to-pose synthesis and real-time rendering pipeline, collaborating across ML, backend, and product teams."
+]
+}
 ];
+
 
 const EDUCATION = [
   { when: "2021 — 2025", what: "B.Tech, Artificial Intelligence and Data Science — Yeshwantrao Chavan College of Engineering, Nagpur",
@@ -561,14 +612,48 @@ function cmdProjects(){
   });
 }
 
-function cmdExperience(){
+function cmdExperience() {
   EXPERIENCE.forEach((e, i) => {
-    print(`<span class="c-amber b">[${esc(e.when)}]</span> <span class="b">${esc(e.role)}</span> <span class="dim">·</span> <span class="c-cyan">${esc(e.org)}</span> <span class="dim">(${esc(e.where)})</span>`);
-    e.pts.forEach(pt => print(`   <span class="c-green">·</span> ${esc(pt)}`));
-    if (i < EXPERIENCE.length - 1) print("");
+    print(
+      `<span class="c-amber b">[${esc(e.when)}]</span> ` +
+      `<span class="b">${esc(e.role)}</span> <span class="dim">·</span> ` +
+      `<span class="c-cyan">${esc(e.org)}</span> ` +
+      `<span class="dim">(${esc(e.where)})</span>`
+    );
+
+    // New project-based format
+    if (e.projects) {
+      e.projects.forEach((project, idx) => {
+        print("");
+
+        print(
+          `   <span class="c-purple b">◆ ${esc(project.title)}</span>`
+        );
+
+        project.pts.forEach(pt => {
+          print(
+            `      <span class="c-green">•</span> ${esc(pt)}`
+          );
+        });
+
+        if (idx < e.projects.length - 1) {
+          print("");
+        }
+      });
+    }
+
+    // Legacy format (ImmverseAI)
+    else if (e.pts) {
+      e.pts.forEach(pt => {
+        print(`   <span class="c-green">•</span> ${esc(pt)}`);
+      });
+    }
+
+    if (i < EXPERIENCE.length - 1) {
+      print("");
+    }
   });
 }
-
 function cmdEducation(){
   EDUCATION.forEach(e => {
     print(`<span class="c-amber b">[${esc(e.when)}]</span> ${esc(e.what)}`);
