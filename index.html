@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<meta name="description" content="Vedant Birewar — AI/ML Engineer & Python Developer. An interactive terminal portfolio. Type 'help' to begin.">
+<title>vedant@ml-rig · AI/ML Engineer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b101c'/%3E%3Ctext x='10' y='44' font-family='monospace' font-size='30' fill='%233cf0a4'%3E%26gt;_%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THEME TOKENS — switch with the `theme` command
+   ============================================================ */
+:root{
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+
+  --bg:#070b12;            /* page behind the terminal   */
+  --bg-term:#0b101c;       /* terminal body              */
+  --bg-bar:#0e1524;        /* title + status bars        */
+  --bg-raise:#121a2c;      /* chips / hovers             */
+  --border:#1d2942;
+
+  --text:#c8d6f0;
+  --dim:#5a6b8c;
+
+  --green:#3cf0a4;         /* prompt · success           */
+  --cyan:#4dd7f7;          /* commands · links           */
+  --purple:#c792ea;        /* keywords · ML terms        */
+  --amber:#ffc66d;         /* strings · highlights       */
+  --red:#ff6b7a;           /* errors                     */
+
+  --sel:#3cf0a4;
+  --scan-opacity:.05;
+}
+
+body[data-theme="matrix"]{
+  --bg:#010604; --bg-term:#02100a; --bg-bar:#03150d; --bg-raise:#061f13;
+  --border:#0d3a24;
+  --text:#9cf7b8; --dim:#3f7a57;
+  --green:#00ff7f; --cyan:#5cffb1; --purple:#8dffcf; --amber:#c8ff9e; --red:#ff8b6b;
+  --sel:#00ff7f;
+}
+
+body[data-theme="amber"]{
+  --bg:#0d0802; --bg-term:#140d04; --bg-bar:#1a1106; --bg-raise:#241809;
+  --border:#3d2c12;
+  --text:#ffd9a0; --dim:#8a6b45;
+  --green:#ffb454; --cyan:#ffd27d; --purple:#ff9e64; --amber:#ffe6b0; --red:#ff7a5c;
+  --sel:#ffb454;
+}
+
+body[data-theme="paper"]{
+  --bg:#e9e4d8; --bg-term:#f8f5ec; --bg-bar:#efeadd; --bg-raise:#e4ddcb;
+  --border:#cfc6ae;
+  --text:#2a3140; --dim:#8b8f99;
+  --green:#0e9f6e; --cyan:#0e7490; --purple:#7c3aed; --amber:#b45309; --red:#dc2626;
+  --sel:#0e9f6e;
+  --scan-opacity:0;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  background-image:radial-gradient(1200px 700px at 70% -10%, rgba(77,215,247,.06), transparent 60%),
+                   radial-gradient(900px 600px at 10% 110%, rgba(60,240,164,.05), transparent 60%);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13.5px;
+  line-height:1.55;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  transition:background .25s ease,color .25s ease;
+}
+::selection{background:var(--sel);color:var(--bg-term)}
+
+a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted color-mix(in srgb,var(--cyan) 55%,transparent)}
+a:hover{border-bottom-style:solid}
+a:focus-visible,.cmd-link:focus-visible,.chip:focus-visible,button:focus-visible{
+  outline:2px solid var(--green);outline-offset:2px;border-radius:2px;
+}
+
+/* ============================================================
+   TERMINAL WINDOW
+   ============================================================ */
+.terminal{
+  position:relative;
+  width:min(1060px,100%);
+  height:min(860px,calc(100dvh - 36px));
+  display:flex;flex-direction:column;
+  background:var(--bg-term);
+  border:1px solid var(--border);
+  border-radius:12px;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.02) inset;
+  overflow:hidden;
+}
+
+/* CRT atmosphere — subtle scanlines + vignette */
+.terminal::before{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:repeating-linear-gradient(0deg,
+    rgba(255,255,255,var(--scan-opacity)) 0 1px, transparent 1px 3px);
+  mix-blend-mode:overlay;
+}
+.terminal::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(120% 90% at 50% 30%, transparent 60%, rgba(0,0,0,.28) 100%);
+}
+body[data-theme="paper"] .terminal::after{background:none}
+
+/* ---- title bar ---- */
+.titlebar{
+  flex:none;display:flex;align-items:center;gap:12px;
+  height:42px;padding:0 14px;
+  background:var(--bg-bar);
+  border-bottom:1px solid var(--border);
+  user-select:none;
+}
+.dots{display:flex;gap:8px}
+.dot{width:12px;height:12px;border-radius:50%;border:none;padding:0;cursor:pointer;
+  box-shadow:inset 0 -1px 2px rgba(0,0,0,.35)}
+.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+.dot:hover{filter:brightness(1.15)}
+.title{
+  flex:1;text-align:center;
+  color:var(--dim);font-size:12px;letter-spacing:.04em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.theme-btn{
+  flex:none;font-family:var(--mono);font-size:11px;
+  color:var(--dim);background:transparent;
+  border:1px solid var(--border);border-radius:6px;
+  padding:3px 9px;cursor:pointer;letter-spacing:.03em;
+}
+.theme-btn:hover{color:var(--green);border-color:var(--green)}
+
+/* ---- scroll body ---- */
+.term-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  padding:18px 20px 26px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.term-body::-webkit-scrollbar{width:10px}
+.term-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;border:2px solid var(--bg-term)}
+.term-body::-webkit-scrollbar-track{background:transparent}
+
+.line{white-space:pre-wrap;word-break:break-word;min-height:1.55em}
+pre.block{
+  margin:6px 0;white-space:pre;overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  line-height:1.42;
+}
+
+/* ---- ASCII banner ---- */
+.banner{
+  margin:10px 0 2px;white-space:pre;overflow-x:auto;
+  font-size:clamp(6.5px,2.15vw,13px);line-height:1.18;font-weight:700;
+  background:linear-gradient(92deg,var(--green) 0%,var(--cyan) 55%,var(--purple) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px color-mix(in srgb,var(--green) 22%,transparent));
+}
+.banner-sub{color:var(--dim);letter-spacing:.06em;margin-bottom:10px}
+
+/* ---- semantic colors ---- */
+.c-green{color:var(--green)} .c-cyan{color:var(--cyan)} .c-purple{color:var(--purple)}
+.c-amber{color:var(--amber)} .c-red{color:var(--red)} .dim{color:var(--dim)}
+.glow{text-shadow:0 0 10px color-mix(in srgb,currentColor 35%,transparent)}
+.b{font-weight:700}
+
+.cmd-link{
+  color:var(--cyan);cursor:pointer;
+  border-bottom:1px dotted color-mix(in srgb,var(--cyan) 55%,transparent);
+}
+.cmd-link:hover{color:var(--green);border-color:var(--green)}
+
+.chip{
+  display:inline-block;margin:3px 6px 3px 0;padding:2px 10px;
+  border:1px solid var(--border);border-radius:99px;
+  color:var(--cyan);background:var(--bg-raise);
+  cursor:pointer;font-size:12px;user-select:none;
+}
+.chip:hover{border-color:var(--green);color:var(--green);
+  box-shadow:0 0 12px color-mix(in srgb,var(--green) 18%,transparent)}
+
+/* ---- input line ---- */
+.iline{display:flex;flex-wrap:wrap;align-items:baseline;position:relative;margin-top:2px}
+.iline .ps{white-space:pre}
+#typed{white-space:pre-wrap;word-break:break-all}
+.cursor{
+  display:inline-block;width:.62em;height:1.18em;
+  background:var(--green);vertical-align:text-bottom;
+  box-shadow:0 0 8px color-mix(in srgb,var(--green) 60%,transparent);
+  animation:blink 1.06s steps(1) infinite;
+}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:0}}
+#cli{
+  position:absolute;left:0;top:0;width:1px;height:1px;
+  opacity:0;border:0;padding:0;background:transparent;color:transparent;
+  font:inherit;caret-color:transparent;
+}
+
+/* ---- status bar (tmux-style) ---- */
+.statusbar{
+  flex:none;display:flex;align-items:center;gap:0;
+  height:30px;padding:0 0 0 0;
+  background:var(--bg-bar);border-top:1px solid var(--border);
+  font-size:11.5px;letter-spacing:.03em;color:var(--dim);
+  user-select:none;overflow:hidden;white-space:nowrap;
+}
+.seg{padding:0 12px;display:flex;align-items:center;height:100%}
+.seg.mode{background:var(--green);color:var(--bg-term);font-weight:700;letter-spacing:.08em}
+.seg + .seg{border-left:1px solid var(--border)}
+.sb-right{margin-left:auto;display:flex;height:100%}
+.sb-right .seg{border-left:1px solid var(--border)}
+@media (max-width:760px){ .hide-sm{display:none} }
+
+/* ---- skill bars / tables built from text keep mono alignment ---- */
+.kv .k{color:var(--purple)}
+
+/* ---- noscript fallback ---- */
+.noscript-box{padding:28px;max-width:640px;margin:auto}
+.noscript-box h1{font-size:18px;color:var(--green);margin:0 0 12px}
+
+/* ---- responsive ---- */
+@media (max-width:640px){
+  body{padding:0}
+  .terminal{width:100%;height:100dvh;border:0;border-radius:0}
+  body{font-size:12.5px}
+  .term-body{padding:14px 12px 22px}
+  .title{font-size:11px}
+}
+
+/* ---- reduced motion ---- */
+@media (prefers-reduced-motion:reduce){
+  .cursor{animation:none}
+  *{transition:none !important}
+}
+</style>
+</head>
+<body data-theme="night">
+
+<noscript>
+  <div class="noscript-box">
+    <h1>vedant@ml-rig — AI/ML Engineer</h1>
+    <p>This interactive terminal needs JavaScript. The short version:</p>
+    <p>Vedant Sunil Birewar · Python Developer & AI/ML Engineer · Nagpur, IN<br>
+       Agentic RAG systems · LLM applications · multimodal AI pipelines.<br>
+       <a href="mailto:vedantbirewar@gmail.com">vedantbirewar@gmail.com</a> ·
+       <a href="https://github.com/vedant0321">github</a> ·
+       <a href="https://linkedin.com/in/vedant-birewar">linkedin</a></p>
+  </div>
+</noscript>
+
+<main class="terminal" aria-label="Interactive terminal portfolio">
+
+  <div class="titlebar">
+    <div class="dots">
+      <button class="dot r" id="dot-r" title="close" aria-label="close (decorative)"></button>
+      <button class="dot y" id="dot-y" title="minimize" aria-label="minimize (decorative)"></button>
+      <button class="dot g" id="dot-g" title="zoom" aria-label="zoom (decorative)"></button>
+    </div>
+    <div class="title" id="win-title">vedant@ml-rig: ~/portfolio — zsh</div>
+    <button class="theme-btn" id="theme-btn" title="cycle theme">◐ night</button>
+  </div>
+
+  <div class="term-body" id="term-body">
+    <div id="out" aria-live="polite"></div>
+
+    <div class="iline" id="iline" style="visibility:hidden">
+      <span class="ps" id="ps1"></span><span id="typed"></span><span class="cursor" id="cursor"></span>
+      <input id="cli" autocomplete="off" autocapitalize="off" autocorrect="off"
+             spellcheck="false" aria-label="Terminal command input. Type help and press Enter.">
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="seg mode">NORMAL</div>
+    <div class="seg">⎇ main</div>
+    <div class="seg hide-sm">✦ ml-rig</div>
+    <div class="sb-right">
+      <div class="seg hide-sm">py 3.11</div>
+      <div class="seg hide-sm">cuda 12.4</div>
+      <div class="seg">utf-8</div>
+      <div class="seg" id="clock">--:--:--</div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+/* ============================================================
+   ✏️  EDIT YOUR DETAILS HERE
+   Everything personal lives in this first block.
+   Change it, save, refresh — the whole site updates.
+   ============================================================ */
+(() => {
+"use strict";
+
+const PROFILE = {
+  user: "vedant",
+  host: "ml-rig",
+  name: "Vedant Sunil Birewar",
+  role: "AI / ML Engineer & Python Developer",
+  loc:  "Nagpur, Maharashtra, IN",
+  email: "vedantbirewar@gmail.com",
+  github: "https://github.com/vedant0321",
+  linkedin: "https://linkedin.com/in/vedant-birewar",
+  phone: "+91 9420277590",
+  resume: "https://example.com/vedant-birewar-resume.pdf",
+  version: "1.6.0",
+};
+
+const SKILLS = [
+  ["Languages", [
+    ["Python", 92], ["SQL (MySQL)", 82], ["C / C++", 70], ["HTML/CSS", 75], ["R", 60],
+  ]],
+  ["ML / Deep Learning", [
+    ["PyTorch", 85], ["Transformers (HF)", 86], ["scikit-learn", 84], ["FastAI", 80],
+  ]],
+  ["LLMs & GenAI", [
+    ["RAG · Agentic AI", 90], ["LangChain", 88], ["Prompt Engineering / Fine-tuning", 84], ["Vector DBs (FAISS · Chroma)", 85], ["OpenAI API · Gemini", 86], ["vLLM", 78],
+  ]],
+  ["Computer Vision", [
+    ["OpenCV", 80], ["ONNX", 78], ["ResNet · YOLO", 76], ["DLIB · RIFE", 72],
+  ]],
+  ["Backend, Cloud & MLOps", [
+    ["FastAPI · REST APIs", 88], ["Docker · Git", 82], ["WebSockets · Streaming", 80], ["AWS (basic) · CI/CD", 65], ["Embedding Pipelines · Caching", 84],
+  ]],
+];
+
+const PROJECTS = [
+  { n: "Academic-Fit", t: "AI-driven resume evaluation platform",
+    d: "Fine-tuned LLM platform that evaluates student resumes against job descriptions, pinpoints skill gaps, and generates personalised improvement recommendations. Institution-level analytics dashboards with CSV export.",
+    s: "Python · Gemini LLM · Machine Learning · NLP",
+    m: "Jan 2025 · cohort-scale employability tracking for advisors",
+    l: "https://github.com/vedant0321" },
+  { n: "EyeGuardian", t: "ocular disease classification model",
+    d: "ResNet18-based deep learning model using transfer learning for multi-class retinal disease classification from fundus images.",
+    s: "Python · FastAI · ResNet18 · Transfer Learning · Computer Vision",
+    m: "Oct 2023 · strong diagnostic accuracy on multi-class retinal disease",
+    l: "https://github.com/vedant0321" },
+  { n: "Crop Prediction Platform", t: "next-gen agricultural ML pipeline",
+    d: "End-to-end ML pipeline combining crop recommendation and yield prediction models, delivering actionable resource optimisation insights via an interactive dashboard.",
+    s: "Python · Machine Learning · Streamlit",
+    m: "Apr 2022 · live recommendation + yield dashboard",
+    l: "https://github.com/vedant0321" },
+  { n: "AAC System", t: "assistive tech for the visually impaired",
+    d: "ML-powered object detection and audio assistance device for visually impaired users, enabling real-time inference at the edge.",
+    s: "Python · Raspberry Pi · Arduino · IoT · Object Detection",
+    m: "Aug 2021 · real-time edge inference on embedded hardware",
+    l: "https://github.com/vedant0321" },
+];
+
+const EXPERIENCE = [
+  { when: "Jul 2025 — now", role: "Junior Python Developer — AI/ML", org: "Com1 Communication Technologies Pvt. Ltd.", where: "Nagpur, IN",
+    pts: [
+      "AI Bid Assistant: architected an end-to-end AI document understanding system parsing UK tender packs, frameworks and bid documents — cutting manual review time for enterprise clients",
+      "Engineered an LLM-driven questionnaire generator that auto-creates structured eligibility/compliance question sets from tender docs",
+      "Built an automated knowledge extraction pipeline surfacing mandatory clauses, deadlines, scope and risk items",
+      "Implemented an agentic reasoning workflow for cross-document tender comparison",
+      "Locarla AI: designed and deployed an agentic RAG system over 4.8M+ EPC property records for natural-language querying of energy ratings and housing analytics",
+      "Built a ChatGPT-style multi-turn memory engine with session context preservation",
+      "Developed an automated NL-to-SQL module translating questions into optimised SQL over a large-scale property DB",
+      "Achieved measurable inference gains via embedding pipelining, response caching and model-level optimisation",
+    ]},
+  { when: "Jan 2025 — Jul 2025", role: "AI/ML Intern", org: "ImmverseAI", where: "Nagpur, IN",
+    pts: [
+      "Researched and benchmarked SOTA LLMs, TTS models, lip-sync engines and video synthesis pipelines for a real-time AI avatar system",
+      "Built a CUDA-accelerated face detection/recognition service using DLIB + FastAPI for sub-second identity verification",
+      "Converted and optimised VAE model weights to ONNX, achieving 30-40% reduction in inference latency and GPU memory",
+      "Integrated RIFE frame interpolation for smoother lip-sync and motion transitions",
+      "Developed a streaming TTS response layer for real-time, low-latency conversational interactions",
+      "Contributed to a full-stack audio-to-pose synthesis and real-time rendering pipeline across ML, backend and product teams",
+    ]},
+];
+
+const EDUCATION = [
+  { when: "2021 — 2025", what: "B.Tech, Artificial Intelligence and Data Science — Yeshwantrao Chavan College of Engineering, Nagpur",
+    extra: "CGPA 8.22/10" },
+  { when: "2019 — 2021", what: "HSC — Shikshan Maharshi Late Jiwatode Jr. College, Chandrapur",
+    extra: "91.33%" },
+  { when: "2019", what: "SSC — Vidya Vihar Convent High School & Jr. College, Chandrapur",
+    extra: "83.20%" },
+  { when: "certs", what: "NVIDIA DLI — Fundamentals of Deep Learning · Machine Learning A-Z (Udemy)",
+    extra: "" },
+];
+
+const ACHIEVEMENTS = [
+  "Winner — Smart India Hackathon 2022 (Hardware Edition): led team to national-level victory, awarded ₹1,00,000 by the Government of India",
+  "Cleared Stage-1 — E-Yantra Robotics Competition 2023 (IIT Bombay)",
+  "CodeChef 2-Star Rated Competitive Programmer",
+];
+
+const THEMES = ["night", "matrix", "amber", "paper"];
+
+/* ============================================================
+   ENGINE — you shouldn't need to touch anything below
+   ============================================================ */
+
+const $ = (id) => document.getElementById(id);
+const out = $("out"), body = $("term-body"), cli = $("cli"),
+      typed = $("typed"), iline = $("iline"), ps1el = $("ps1");
+
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const canHover = window.matchMedia("(hover: hover)").matches;
+
+const esc = (s) => String(s).replace(/[&<>"']/g, c =>
+  ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const wait = (ms) => new Promise(r => setTimeout(r, ms));
+const pad = (s, n) => String(s).length >= n ? String(s) : String(s) + " ".repeat(n - String(s).length);
+
+const PS1 = `<span class="c-green glow">${esc(PROFILE.user)}@${esc(PROFILE.host)}</span>` +
+            `<span class="dim">:</span><span class="c-cyan">~</span><span class="dim">$</span> `;
+
+let history = [], hIdx = -1, busy = false;
+
+/* ---------- output helpers ---------- */
+function scroll(){ body.scrollTop = body.scrollHeight; }
+
+function print(html = "", cls = ""){
+  const d = document.createElement("div");
+  d.className = "line" + (cls ? " " + cls : "");
+  d.innerHTML = html;
+  out.appendChild(d);
+  scroll();
+  return d;
+}
+function printPre(html, cls = ""){
+  const p = document.createElement("pre");
+  p.className = "block" + (cls ? " " + cls : "");
+  p.innerHTML = html;
+  out.appendChild(p);
+  scroll();
+  return p;
+}
+const cmdLink = (cmd, label) =>
+  `<span class="cmd-link" data-cmd="${esc(cmd)}" role="button" tabindex="0">${esc(label || cmd)}</span>`;
+const chip = (cmd, label) =>
+  `<span class="chip" data-cmd="${esc(cmd)}" role="button" tabindex="0">${esc(label || cmd)}</span>`;
+
+function echoCmd(line){ print(PS1 + `<span>${esc(line)}</span>`); }
+
+function barStr(pct, w = 22){
+  const f = Math.round((pct / 100) * w);
+  return "█".repeat(f) + "░".repeat(w - f);
+}
+
+async function animBar(el, label, dur, suffixFn){
+  const W = 24, okTag = `<span class="c-green b">[ OK ]</span> `;
+  if (reduced || dur === 0){
+    el.innerHTML = okTag + `${esc(label)} <span class="c-green">${barStr(100, W)}</span> 100%` +
+      (suffixFn ? `  <span class="dim">${esc(suffixFn(1))}</span>` : "");
+    scroll(); return;
+  }
+  const steps = 28;
+  for (let i = 0; i <= steps; i++){
+    const p = i / steps, pct = Math.round(p * 100);
+    el.innerHTML = okTag + `${esc(label)} <span class="c-green">${barStr(pct, W)}</span> ${String(pct).padStart(3)}%` +
+      (suffixFn ? `  <span class="dim">${esc(suffixFn(p))}</span>` : "");
+    scroll();
+    await wait(dur / steps);
+  }
+}
+
+/* ---------- banner ---------- */
+const BANNER_ART = [
+"██╗   ██╗███████╗██████╗  █████╗ ███╗   ██╗████████╗",
+"██║   ██║██╔════╝██╔══██╗██╔══██╗████╗  ██║╚══██╔══╝",
+"██║   ██║█████╗  ██║  ██║███████║██╔██╗ ██║   ██║   ",
+"╚██╗ ██╔╝██╔══╝  ██║  ██║██╔══██║██║╚██╗██║   ██║   ",
+" ╚████╔╝ ███████╗██████╔╝██║  ██║██║ ╚████║   ██║   ",
+"  ╚═══╝  ╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   ",
+].join("\n");
+
+function banner(){
+  const p = document.createElement("pre");
+  p.className = "banner";
+  p.textContent = BANNER_ART;
+  out.appendChild(p);
+  print(`<span class="banner-sub">─── ${esc(PROFILE.role.toUpperCase())} ··· models that actually ship ───</span>`);
+  scroll();
+}
+
+/* ---------- commands ---------- */
+function cmdHelp(){
+  const rows = [
+    ["about",      "who is this human"],
+    ["skills",     "stack & proficiency bars"],
+    ["projects",   "things I have shipped"],
+    ["experience", "where I have worked"],
+    ["education",  "degrees & certs"],
+    ["achievements","awards & competitions"],
+    ["contact",    "email · github · linkedin"],
+    ["resume",     "grab the PDF"],
+    ["neofetch",   "system info, but make it me"],
+    ["nvidia-smi", "check on the GPU"],
+    ["train",      "run a (very real) training job"],
+    ["theme",      "night · matrix · amber · paper"],
+    ["clear",      "wipe the screen"],
+  ];
+  print(`<span class="c-amber b">COMMANDS</span>`);
+  rows.forEach(([c, d]) =>
+    print(`  ${cmdLink(c)}${esc(" ".repeat(Math.max(1, 14 - c.length)))}<span class="dim">${esc(d)}</span>`));
+  print("");
+  print(`<span class="dim">plus the usual suspects:</span> ls · cat · echo · whoami · date · history · sudo`);
+  print(`<span class="dim">tips: ↑/↓ history · tab to autocomplete · click any command</span>`);
+}
+
+function cmdAbout(){
+  print(`Hey — I'm <span class="c-amber b">${esc(PROFILE.name)}</span>, a ${esc(PROFILE.role)} based in ${esc(PROFILE.loc)}.`);
+  print("");
+  print(`I build production-grade <span class="c-purple">LLM applications</span>, <span class="c-purple">agentic RAG systems</span>, and`);
+  print(`<span class="c-purple">multimodal AI pipelines</span> — from a chatbot querying 4.8M+ property records to`);
+  print(`document-understanding systems that chew through UK tender packs.`);
+  print("");
+  print(`Currently <span class="b">Junior Python Developer — AI/ML @ Com1 Communication Technologies</span>.`);
+  print(`Previously AI/ML Intern @ ImmverseAI, building a real-time AI avatar pipeline.`);
+  print("");
+  print(`What I care about: <span class="c-green">inference that's actually fast</span>, retrieval that doesn't`);
+  print(`hallucinate, and shipping ML that survives real users.`);
+  print("");
+  print(`Also: <span class="c-amber">National Hackathon Winner</span> — Smart India Hackathon 2022 (Hardware Edition).`);
+  print("");
+  print(`<span class="dim">next →</span> ${cmdLink("skills")} · ${cmdLink("projects")} · ${cmdLink("contact")}`);
+}
+
+function cmdWhoami(){
+  print(`${esc(PROFILE.user)} <span class="dim">—</span> ${esc(PROFILE.role)} · turns coffee into models <span class="dim">(full story:</span> ${cmdLink("about")}<span class="dim">)</span>`);
+}
+
+function cmdSkills(){
+  let html = "";
+  SKILLS.forEach(([group, items], gi) => {
+    html += `<span class="c-amber b">── ${esc(group)} ${"─".repeat(Math.max(2, 44 - group.length))}</span>\n`;
+    items.forEach(([name, pct]) => {
+      html += `${esc(pad(name, 31))}<span class="c-green glow">${barStr(pct)}</span> <span class="dim">${String(pct).padStart(3)}</span>\n`;
+    });
+    if (gi < SKILLS.length - 1) html += "\n";
+  });
+  printPre(html);
+  print(`<span class="dim">honest scale: 60 = competent · 80 = strong · 90+ = ask me anything</span>`);
+}
+
+function cmdProjects(){
+  PROJECTS.forEach((p, i) => {
+    print(`<span class="c-amber b">[${i + 1}]</span> <span class="c-cyan b">${esc(p.n)}</span> <span class="dim">—</span> ${esc(p.t)}`);
+    print(`    ${esc(p.d)}`);
+    print(`    <span class="c-purple">▸</span> <span class="dim">${esc(p.s)}</span>`);
+    print(`    <span class="c-green">★</span> ${esc(p.m)}`);
+    print(`    <span class="dim">↗</span> <a href="${esc(p.l)}" target="_blank" rel="noopener">${esc(p.l.replace(/^https?:\/\//, ""))}</a>`);
+    if (i < PROJECTS.length - 1) print("");
+  });
+}
+
+function cmdExperience(){
+  EXPERIENCE.forEach((e, i) => {
+    print(`<span class="c-amber b">[${esc(e.when)}]</span> <span class="b">${esc(e.role)}</span> <span class="dim">·</span> <span class="c-cyan">${esc(e.org)}</span> <span class="dim">(${esc(e.where)})</span>`);
+    e.pts.forEach(pt => print(`   <span class="c-green">·</span> ${esc(pt)}`));
+    if (i < EXPERIENCE.length - 1) print("");
+  });
+}
+
+function cmdEducation(){
+  EDUCATION.forEach(e => {
+    print(`<span class="c-amber b">[${esc(e.when)}]</span> ${esc(e.what)}`);
+    if (e.extra) print(`   <span class="dim">${esc(e.extra)}</span>`);
+  });
+}
+
+function cmdAchievements(){
+  ACHIEVEMENTS.forEach(a => print(`<span class="c-green">★</span> ${esc(a)}`));
+}
+
+function cmdContact(){
+  const gh = PROFILE.github.replace(/^https?:\/\//, "");
+  const li = PROFILE.linkedin.replace(/^https?:\/\//, "");
+  let html = "";
+  html += `<span class="c-purple">${pad("email", 10)}</span><a href="mailto:${esc(PROFILE.email)}">${esc(PROFILE.email)}</a>\n`;
+  html += `<span class="c-purple">${pad("phone", 10)}</span>${esc(PROFILE.phone)}\n`;
+  html += `<span class="c-purple">${pad("github", 10)}</span><a href="${esc(PROFILE.github)}" target="_blank" rel="noopener">${esc(gh)}</a>\n`;
+  html += `<span class="c-purple">${pad("linkedin", 10)}</span><a href="${esc(PROFILE.linkedin)}" target="_blank" rel="noopener">${esc(li)}</a>\n`;
+  html += `<span class="c-purple">${pad("location", 10)}</span>${esc(PROFILE.loc)} · open to remote\n`;
+  html += `<span class="c-purple">${pad("status", 10)}</span><span class="c-green">open</span> to AI/ML & Python developer roles · LLM infra`;
+  printPre(html);
+  print(`<span class="dim">response time: &lt; 24h — faster than my model's cold start.</span>`);
+}
+
+function cmdResume(){
+  print(`→ <a href="${esc(PROFILE.resume)}" target="_blank" rel="noopener">vedant-birewar-resume.pdf</a> <span class="dim">(opens in a new tab)</span>`);
+}
+
+function cmdNeofetch(){
+  const art = [
+    "╭─────────────────╮",
+    "│   ◉  ◉  ◉  ◉    │",
+    "│  ╱│╲╱│╲╱│╲╱│╲   │",
+    "│ ◉  ◉  ◉  ◉  ◉   │",
+    "│  ╲│╱╲│╱╲│╱╲│╱   │",
+    "│   ◉  ◉  ◉  ◉    │",
+    "╰─────────────────╯",
+    " n e u r a l · n e t ",
+  ];
+  const theme = document.body.dataset.theme || "night";
+  const info = [
+    ["", `<span class="c-amber b">${esc(PROFILE.user)}@${esc(PROFILE.host)}</span>`],
+    ["", `<span class="dim">────────────────────</span>`],
+    ["OS",     `PortfolioOS ${esc(PROFILE.version)} LTS x86_64`],
+    ["Host",   `${esc(PROFILE.name)} · ${esc(PROFILE.role)}`],
+    ["Kernel", `brain 5.15.0-ml`],
+    ["Uptime", `1+ years shipping LLM apps`],
+    ["Shell",  `zsh <span class="dim">+ vim keybindings</span>`],
+    ["DE/WM",  `JupyterLab / tmux`],
+    ["Theme",  `${esc(theme)}`],
+    ["CPU",    `Caffeine i9 <span class="dim">(16 threads of worry)</span>`],
+    ["GPU",    `RTX 4090 <span class="dim">(also dreams)</span>`],
+    ["Memory", `4.8M+ records, fully indexed`],
+  ];
+  const W = Math.max(...art.map(s => s.length)) + 3;
+  let html = "";
+  const rows = Math.max(art.length, info.length);
+  for (let i = 0; i < rows; i++){
+    const a = art[i] || "";
+    const kv = info[i];
+    let right = "";
+    if (kv) right = kv[0] ? `<span class="c-purple">${esc(pad(kv[0], 7))}</span><span class="dim">:</span> ${kv[1]}` : kv[1];
+    html += `<span class="c-green glow">${esc(pad(a, W))}</span>${right}\n`;
+  }
+  html += `\n${" ".repeat(W)}<span class="c-green">███</span><span class="c-cyan">███</span><span class="c-purple">███</span><span class="c-amber">███</span><span class="c-red">███</span><span class="dim">███</span>`;
+  printPre(html);
+}
+
+function cmdNvidiaSmi(){
+  const W = 64;
+  const top = "+" + "-".repeat(W) + "+";
+  const eq  = "|" + "=".repeat(W) + "|";
+  const r = (t) => "|" + pad(String(t).slice(0, W), W) + "|";
+  const lines = [
+    top,
+    r(" NVIDIA-SMI 550.54.15      Driver Version: 550.54.15   CUDA: 12.4"),
+    top,
+    r(" GPU  Name               Persist   Memory-Usage         GPU-Util"),
+    eq,
+    r("  0   RTX 4090 (dreams)    On      18432MiB / 24564MiB     97 %"),
+    r("      Fan 42% · Temp 61C · Pwr 285W/450W · Compute: training"),
+    top,
+    r(" Processes:"),
+    r("  PID    Type   Name                                  GPU Memory"),
+    r("  1337   C      python train.py --model hire-me-7b     18432MiB"),
+    top,
+  ];
+  printPre(`<span class="c-green">${esc(lines.join("\n"))}</span>`);
+  print(`<span class="dim">yes, it is always at 97%. no, you cannot have it.</span>`);
+}
+
+async function cmdTrain(){
+  busy = true;
+  print(`<span class="dim">$ python train.py --data career.jsonl --model vedant-7b --epochs 4</span>`);
+  await wait(reduced ? 0 : 180);
+  print(`<span class="c-purple">wandb</span><span class="dim">: tracking run</span> <span class="c-cyan">hire-me-2026</span>`);
+  const L0 = 2.31;
+  for (let e = 1; e <= 4; e++){
+    const el = print("");
+    const a = L0 * Math.pow(0.45, e - 1), b = L0 * Math.pow(0.45, e);
+    await animBar(el, `epoch ${e}/4`, reduced ? 0 : 820, (p) => {
+      const loss = (a + (b - a) * p).toFixed(3);
+      const acc  = (58 + (94 - 58) * ((e - 1 + p) / 4)).toFixed(1);
+      return `loss ${loss} · acc ${acc}%`;
+    });
+  }
+  print(`<span class="c-green b">✓</span> converged · best checkpoint → <span class="c-amber">./ckpt/hire_me.pt</span>`);
+  print(`<span class="c-green b">✓</span> eval — ships-to-prod: <span class="c-green">PASS</span> · debugs-at-3am: <span class="c-green">PASS</span> · meetings: <span class="c-green">PASS</span>`);
+  print(`<span class="dim">deploy this model?</span> ${cmdLink("contact")}`);
+  busy = false;
+}
+
+function cmdTheme(args){
+  const name = (args[0] || "").toLowerCase();
+  if (!name){
+    print(`usage: <span class="c-cyan">theme &lt;name&gt;</span>`);
+    print(THEMES.map(t => chip("theme " + t, t)).join(" "));
+    return;
+  }
+  if (!THEMES.includes(name)){
+    print(`<span class="c-red">theme: unknown theme '${esc(name)}'</span> <span class="dim">— try:</span> ${THEMES.join(" · ")}`);
+    return;
+  }
+  applyTheme(name);
+  print(`theme set → <span class="c-green">${esc(name)}</span>`);
+}
+
+function cmdLs(){
+  const items = [
+    ["about.txt", "cat about.txt", "c-text"],
+    ["contact.md", "cat contact.md", "c-text"],
+    ["experience.log", "cat experience.log", "c-text"],
+    ["projects/", "projects", "c-cyan b"],
+    ["resume.pdf", "resume", "c-red"],
+    ["skills.json", "cat skills.json", "c-amber"],
+  ];
+  print(items.map(([f, cmd, cls]) =>
+    `<span class="cmd-link ${cls}" data-cmd="${esc(cmd)}" role="button" tabindex="0">${esc(f)}</span>`
+  ).join("   "));
+}
+
+function cmdCat(args){
+  const f = args[0];
+  if (!f){ print(`cat: missing file <span class="dim">— try</span> ${cmdLink("ls")}`); return; }
+  switch (f){
+    case "about.txt":       return cmdAbout();
+    case "contact.md":      return cmdContact();
+    case "experience.log":  return cmdExperience();
+    case "skills.json": {
+      const obj = Object.fromEntries(SKILLS.map(([g, items]) => [g, Object.fromEntries(items)]));
+      return printPre(`<span class="c-amber">${esc(JSON.stringify(obj, null, 2))}</span>`);
+    }
+    case "projects/":
+    case "projects":        return print(`cat: projects/: Is a directory <span class="dim">(try</span> ${cmdLink("projects")}<span class="dim">)</span>`);
+    case "resume.pdf":      return print(`cat: resume.pdf: binary file — use ${cmdLink("resume")}`);
+    default:                return print(`<span class="c-red">cat: ${esc(f)}: No such file or directory</span>`);
+  }
+}
+
+function cmdSudo(args){
+  const what = args.join(" ").toLowerCase();
+  if (what.includes("hire")){
+    print(`<span class="dim">[sudo] password for guest:</span> ********`);
+    print(`<span class="c-green b">access granted ✓</span>`);
+    print(`→ initiating onboarding sequence…`);
+    print(`→ offer-letter template loaded · calendar invite drafted`);
+    print(`→ final step: <a href="mailto:${esc(PROFILE.email)}?subject=let&#39;s%20build">email me</a> <span class="dim">— subject: "let's build"</span>`);
+  } else {
+    print(`<span class="c-red">guest is not in the sudoers file. This incident will be reported</span> <span class="dim">(to a recruiter).</span>`);
+    print(`<span class="dim">hint:</span> sudo hire-me`);
+  }
+}
+
+function cmdHistory(){
+  if (!history.length) return print(`<span class="dim">history: empty (you just got here)</span>`);
+  history.forEach((h, i) => print(`<span class="dim">${String(i + 1).padStart(4)}</span>  ${esc(h)}`));
+}
+
+/* ---------- registry ---------- */
+const CMDS = {
+  help:        { fn: cmdHelp },
+  about:       { fn: cmdAbout },
+  whoami:      { fn: cmdWhoami },
+  skills:      { fn: cmdSkills },
+  projects:    { fn: cmdProjects },
+  experience:  { fn: cmdExperience },
+  education:   { fn: cmdEducation },
+  achievements:{ fn: cmdAchievements },
+  contact:     { fn: cmdContact },
+  resume:      { fn: cmdResume },
+  neofetch:    { fn: cmdNeofetch },
+  "nvidia-smi":{ fn: cmdNvidiaSmi },
+  train:       { fn: cmdTrain, async: true },
+  theme:       { fn: cmdTheme },
+  banner:      { fn: () => banner() },
+  clear:       { fn: () => { out.innerHTML = ""; } },
+  ls:          { fn: cmdLs },
+  cat:         { fn: cmdCat },
+  history:     { fn: cmdHistory },
+  echo:        { fn: (a) => print(esc(a.join(" "))) },
+  date:        { fn: () => print(esc(new Date().toString())) },
+  sudo:        { fn: cmdSudo },
+  ping:        { fn: () => print(`pong <span class="dim">— 0.042 ms (local inference)</span>`) },
+  vim:         { fn: () => print(`E37: no write since last change… kidding — you're free. <span class="dim">(:q! works on the first try here)</span>`) },
+  nano:        { fn: () => print(`so brave. <span class="dim">respect.</span>`) },
+  emacs:       { fn: () => print(`a fine operating system — shame about the editor. <span class="dim">(ducks)</span>`) },
+  exit:        { fn: () => print(`session persists. closing the tab works, but the models will miss you.`) },
+  rm:          { fn: (a) => print(a.join(" ").includes("-rf")
+                   ? `<span class="c-red">permission denied:</span> this portfolio has 99.99% uptime and zero chill.`
+                   : `rm: cowardly refusing to delete my achievements`) },
+};
+const ALIASES = {
+  "?": "help", man: "help", h: "help",
+  exp: "experience", work: "experience",
+  edu: "education",
+  proj: "projects", p: "projects",
+  awards: "achievements", achieve: "achievements",
+  social: "contact", socials: "contact", email: "contact",
+  cv: "resume",
+  gpu: "nvidia-smi", "nvidia": "nvidia-smi",
+  nf: "neofetch", fetch: "neofetch",
+  cls: "clear",
+  logout: "exit", quit: "exit", q: "exit",
+  fit: "train",
+};
+
+function lev(a, b){
+  const m = a.length, n = b.length;
+  const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return d[m][n];
+}
+
+function dispatch(line){
+  const parts = line.trim().split(/\s+/);
+  let name = (parts.shift() || "").toLowerCase();
+  if (ALIASES[name]) name = ALIASES[name];
+  const c = CMDS[name];
+  if (c){ return c.fn(parts); }
+  const pool = [...Object.keys(CMDS), ...Object.keys(ALIASES)];
+  let best = null, bd = 3;
+  for (const p of pool){ const d = lev(name, p); if (d < bd){ bd = d; best = p; } }
+  print(`<span class="c-red">command not found:</span> ${esc(name)}` +
+        (best ? ` <span class="dim">— did you mean</span> ${cmdLink(ALIASES[best] || best)}<span class="dim">?</span>` : ""));
+  if (!best) print(`<span class="dim">type</span> ${cmdLink("help")} <span class="dim">to see what I respond to</span>`);
+}
+
+function execute(line){
+  const t = line.trim();
+  echoCmd(t);
+  if (t){
+    if (history[history.length - 1] !== t) history.push(t);
+    hIdx = history.length;
+    dispatch(t);
+  }
+  cli.value = ""; sync(); scroll();
+}
+
+function runFromUI(cmd){
+  if (busy) return;
+  execute(cmd);
+  if (canHover) cli.focus({ preventScroll: true });
+}
+
+/* ---------- input plumbing ---------- */
+function sync(){ typed.textContent = cli.value; }
+
+cli.addEventListener("input", sync);
+
+cli.addEventListener("keydown", (e) => {
+  if (e.key === "Enter"){
+    e.preventDefault();
+    if (busy){ return; }
+    execute(cli.value);
+  } else if (e.key === "ArrowUp"){
+    e.preventDefault();
+    if (history.length){ hIdx = Math.max(0, hIdx - 1); cli.value = history[hIdx] || ""; sync(); }
+  } else if (e.key === "ArrowDown"){
+    e.preventDefault();
+    if (history.length){
+      hIdx = Math.min(history.length, hIdx + 1);
+      cli.value = hIdx === history.length ? "" : history[hIdx]; sync();
+    }
+  } else if (e.key === "Tab"){
+    e.preventDefault(); complete();
+  } else if (e.key === "l" && e.ctrlKey){
+    e.preventDefault(); out.innerHTML = "";
+  } else if (e.key === "c" && e.ctrlKey){
+    e.preventDefault(); print(PS1 + esc(cli.value) + "^C"); cli.value = ""; sync();
+  }
+});
+
+function complete(){
+  const v = cli.value;
+  let pool, addSpace = true;
+  if (/^theme\s+\S*$/.test(v)){ pool = THEMES; addSpace = false; }
+  else if (/^cat\s+\S*$/.test(v)){ pool = ["about.txt","contact.md","experience.log","projects/","resume.pdf","skills.json"]; addSpace = false; }
+  else { pool = [...new Set([...Object.keys(CMDS), ...Object.keys(ALIASES)])]; }
+  const parts = v.split(/\s+/);
+  const last = parts[parts.length - 1] || "";
+  if (!last) return;
+  const hits = pool.filter(p => p.startsWith(last));
+  if (hits.length === 1){
+    parts[parts.length - 1] = hits[0];
+    cli.value = parts.join(" ") + (addSpace ? " " : "");
+    sync();
+  } else if (hits.length > 1){
+    print(`<span class="dim">${esc(hits.join("   "))}</span>`);
+  }
+}
+
+/* click / keyboard activation for any [data-cmd] element */
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-cmd]");
+  if (t){ e.preventDefault(); runFromUI(t.dataset.cmd); return; }
+  if (e.target.closest("a, button, input")) return;
+  if (String(window.getSelection())) return;
+  cli.focus({ preventScroll: true });
+});
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("[data-cmd]")){
+    e.preventDefault(); runFromUI(e.target.dataset.cmd);
+  }
+});
+
+/* ---------- chrome: theme button, dots, clock ---------- */
+function applyTheme(name){
+  document.body.dataset.theme = name;
+  $("theme-btn").textContent = "◐ " + name;
+}
+$("theme-btn").addEventListener("click", () => {
+  const cur = document.body.dataset.theme || "night";
+  const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+  applyTheme(next);
+  print(`<span class="dim">theme →</span> <span class="c-green">${esc(next)}</span>`);
+});
+$("dot-r").addEventListener("click", () => print(`<span class="dim">close? the prompt stays open — like my DMs.</span>`));
+$("dot-y").addEventListener("click", () => print(`<span class="dim">minimized my ego instead. window stays.</span>`));
+$("dot-g").addEventListener("click", () => print(`<span class="dim">already at maximum focus.</span>`));
+
+setInterval(() => {
+  $("clock").textContent = new Date().toLocaleTimeString("en-GB", { hour12: false });
+}, 1000);
+
+/* ---------- boot ---------- */
+async function fakeType(text){
+  for (const ch of text){
+    cli.value += ch; sync();
+    await wait(reduced ? 0 : 36 + Math.random() * 50);
+  }
+  await wait(reduced ? 0 : 180);
+}
+
+async function boot(){
+  busy = true;
+  const ok = `<span class="c-green b">[ OK ]</span> `;
+  const step = async (html, ms = 170) => { print(ok + html); await wait(reduced ? 0 : ms); };
+
+  await step(`portfolio kernel <span class="c-cyan">${esc(PROFILE.version)}</span> booting…`);
+  await step(`mounting <span class="c-cyan">/dev/brain</span>`, 140);
+  await step(`GPU: <span class="c-purple">NVIDIA RTX 4090</span> · CUDA 12.4 · 24 GB VRAM`, 160);
+  const wEl = print("");
+  await animBar(wEl, "loading model weights", 1100, (p) => `${(p * 4.2).toFixed(1)} / 4.2 GB`);
+  await step(`attention heads aligned · bias initialized to <span class="c-amber">coffee</span>`, 150);
+  await step(`starting interactive shell <span class="dim">(zsh · portfolio mode)</span>`, 220);
+
+  print("");
+  banner();
+  print(`Hi, I'm <span class="c-amber b">${esc(PROFILE.name)}</span> <span class="dim">·</span> ${esc(PROFILE.role)} <span class="dim">·</span> ${esc(PROFILE.loc)}`);
+  print(`<span class="dim">I turn messy data into production models — and this terminal into a résumé.</span>`);
+  print("");
+
+  iline.style.visibility = "visible";
+  if (canHover) cli.focus({ preventScroll: true });
+  busy = false;
+
+  await wait(reduced ? 0 : 420);
+  await fakeType("help");
+  execute("help");
+}
+
+/* ---------- init ---------- */
+function init(){
+  ps1el.innerHTML = PS1;
+  document.title = `${PROFILE.user}@${PROFILE.host} · ${PROFILE.role}`;
+  $("win-title").textContent = `${PROFILE.user}@${PROFILE.host}: ~/portfolio — zsh`;
+  applyTheme("night");
+  boot();
+}
+init();
+
+})();
+
+</script>
+</body>
+</html>
